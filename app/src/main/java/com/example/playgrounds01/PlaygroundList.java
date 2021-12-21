@@ -16,7 +16,7 @@ public class PlaygroundList extends ArrayList<Parcelable> {
         playgrounds_list = new ArrayList<PlaygroundClass>();
         velVyberu = 0;
 
-        NacistTestovaciHriste();
+        //NacistTestovaciHriste();
     }
 
     public PlaygroundClass getOnIndex(int index)
@@ -41,11 +41,16 @@ public class PlaygroundList extends ArrayList<Parcelable> {
         {
             float[] result = new float[1];
             Location.distanceBetween(currentLocation.getLatitude(), currentLocation.getLongitude(),
-                    pl.getGps_latitude(), pl.getGps_longitude(), result);
+                    pl.getGps_lat(), pl.getGps_long(), result);
             pl.setVzdalenost(result[0]);
         }
 
         SeradVyber();
+    }
+
+    public void add(PlaygroundClass pg)
+    {
+        playgrounds_list.add(pg);
     }
 
     public int size()
@@ -89,8 +94,8 @@ public class PlaygroundList extends ArrayList<Parcelable> {
 
         for(PlaygroundClass pg : playgrounds_list)
         {
-            String txt = "Latitude: " + pg.getGps_latitude() + " Longitude: " + pg.getGps_longitude() +
-                    "\nPopis: " + pg.getPopis() + "\nRank: " + pg.getRank() + "\nVzdálenost: " +
+            String txt = "Latitude: " + pg.getGps_lat() + " Longitude: " + pg.getGps_long() +
+                    "\nPopis: " + pg.getName() + "\nRank: " + pg.getPg_rank() + "\nVzdálenost: " +
                     pg.getVzdalenost() + "m";
             retList.add(txt);
         }
@@ -104,8 +109,8 @@ public class PlaygroundList extends ArrayList<Parcelable> {
 
         for(PlaygroundClass pg : playgrounds_list)
         {
-            String txt = "Latitude: " + pg.getGps_latitude() + " Longitude: " + pg.getGps_longitude() +
-                    "\nPopis: " + pg.getPopis() + "\nRank: " + pg.getRank() + "\nVzdálenost: " +
+            String txt = "Latitude: " + pg.getGps_lat() + " Longitude: " + pg.getGps_long() +
+                    "\nPopis: " + pg.getName() + "\nRank: " + pg.getPg_rank() + "\nVzdálenost: " +
                     pg.getVzdalenost();
             retList.add(txt);
         }

@@ -31,9 +31,9 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
 
         if(plDetail != null)
         {
-            textView_Souradnice.setText("Souřadnice: " + plDetail.getGps_latitude() + ", " + plDetail.getGps_longitude());
-            textViewPopis.setText("Popis: " + plDetail.getPopis());
-            textViewRank.setText("Rank: " + plDetail.getRank());
+            textView_Souradnice.setText("Souřadnice: " + plDetail.getGps_lat() + ", " + plDetail.getGps_long());
+            textViewPopis.setText("Popis: " + plDetail.getName());
+            textViewRank.setText("Rank: " + plDetail.getPg_rank());
             textViewVzdalenost.setText("Vzdálenost: " + plDetail.getVzdalenost());
         }
         else

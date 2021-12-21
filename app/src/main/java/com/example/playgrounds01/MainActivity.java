@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         btnVyhledatPodleAdresy = findViewById(R.id.btn_vyhledat);
 
         // inicializace míst
-        Places.initialize(getApplicationContext(),"AIzaSyDwx_1lNLIyJBRs3bs189LkI1PMcJdfDpc");
+        Places.initialize(getApplicationContext(),"AIzaSyCbYAY2jnLSwxM62aPS5U2L486PzkSyWzk");
 
         btnVyhledatPodleAdresy.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -77,7 +77,7 @@ public class ResultMapActivity extends AppCompatActivity {
                     PlaygroundClass pg = playgroundList.getOnIndex(i);
 
                     MarkerOptions options = new MarkerOptions();
-                    options.position(new LatLng(pg.getGps_latitude(), pg.getGps_longitude()));
+                    options.position(new LatLng(pg.getGps_lat(), pg.getGps_long()));
                     options.title(pg.getMarkerTitle());
                     mMap.addMarker(options);
                 }
