@@ -2,7 +2,6 @@ package com.example.playgrounds01;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -22,9 +21,6 @@ public class ResultMapActivity extends AppCompatActivity {
 
     Marker marker;
 
-    Location currentloc;
-    int velikostVyberu;
-
     PlaygroundList playgroundList;
 
     @Override
@@ -35,22 +31,8 @@ public class ResultMapActivity extends AppCompatActivity {
         // nastavení jména activity
         this.setTitle("Výpis hřišť do Mapy ");
 
-        Bundle extras = getIntent().getBundleExtra("bundle");
-
-        playgroundList = new PlaygroundList();
-
-        velikostVyberu = extras.getInt("velVyber");
-        currentloc = extras.getParcelable("location");
-
-        if(currentloc != null)
-        {
-            playgroundList.setVelVyberu(velikostVyberu);
-            playgroundList.setCurrentLocation(currentloc);
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(), "Souřadnice nenalezeny", Toast.LENGTH_SHORT).show();
-        }
+        // načtení playground listu z ResultListViewActivity
+        playgroundList = getIntent().getParcelableExtra("playgroundList");
 
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -62,16 +44,18 @@ public class ResultMapActivity extends AppCompatActivity {
                 mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
 
-                //nastavení prvního Markeru
+                //nastavení prvního Markeru (pozice od které začíná vyhledávání -> současná pozice uživatele nebo uživatelem zadaná pozice)
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.title("Prvotní pozice");
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                LatLng nastavPozici = new LatLng(currentloc.getLatitude(), currentloc.getLongitude());
+
+                LatLng nastavPozici = new LatLng(playgroundList.getCurrentLocation().getLatitude(),
+                        playgroundList.getCurrentLocation().getLongitude());
 
                 markerOptions.position(nastavPozici);
                 marker = mMap.addMarker(markerOptions);
 
-                // nastavení ostatních Markerů
+                // nastavení ostatních Markerů -> markery pro jednotlivá hřiště
                 for(int i = 0; i < playgroundList.size(); i++)
                 {
                     PlaygroundClass pg = playgroundList.getOnIndex(i);
@@ -82,8 +66,10 @@ public class ResultMapActivity extends AppCompatActivity {
                     mMap.addMarker(options);
                 }
 
+
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(nastavPozici, 10));
 
+                // nastavení pro zobrazení informací o hřišti při kliknutí na marker
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
@@ -94,6 +80,6 @@ public class ResultMapActivity extends AppCompatActivity {
 
             }
         });
-    }
 
+    }
 }

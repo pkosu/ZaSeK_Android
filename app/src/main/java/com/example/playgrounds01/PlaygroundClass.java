@@ -1,8 +1,10 @@
 package com.example.playgrounds01;
 
-import java.io.Serializable;
 
-public class PlaygroundClass implements Serializable {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class PlaygroundClass implements Parcelable {
 
     // data načtená z JSON databáze
     private String id_pg;
@@ -45,6 +47,32 @@ public class PlaygroundClass implements Serializable {
 
         //prozatím nevyužívá id_evaluation a id_multimedia
     }
+
+    // metoda nutná pro Parcelable
+    protected PlaygroundClass(Parcel in) {
+        id_pg = in.readString();
+        gps_lat = in.readDouble();
+        gps_long = in.readDouble();
+        name = in.readString();
+        type = in.readInt();
+        pg_rank = in.readInt();
+        id_evaluation = in.readInt();
+        id_multimedia = in.readInt();
+        vzdalenost = in.readFloat();
+    }
+
+    // metoda nutná pro Parcelable
+    public static final Creator<PlaygroundClass> CREATOR = new Creator<PlaygroundClass>() {
+        @Override
+        public PlaygroundClass createFromParcel(Parcel in) {
+            return new PlaygroundClass(in);
+        }
+
+        @Override
+        public PlaygroundClass[] newArray(int size) {
+            return new PlaygroundClass[size];
+        }
+    };
 
     public double getGps_lat() {
         return gps_lat;
@@ -92,4 +120,24 @@ public class PlaygroundClass implements Serializable {
         this.vzdalenost = vzdalenost;
     }
 
+
+    // metoda nutná pro Parcelable
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    // metoda nutná pro Parcelable
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id_pg);
+        dest.writeDouble(gps_lat);
+        dest.writeDouble(gps_long);
+        dest.writeString(name);
+        dest.writeInt(type);
+        dest.writeInt(pg_rank);
+        dest.writeInt(id_evaluation);
+        dest.writeInt(id_multimedia);
+        dest.writeFloat(vzdalenost);
+    }
 }

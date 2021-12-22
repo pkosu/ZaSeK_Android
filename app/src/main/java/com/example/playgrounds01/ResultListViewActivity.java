@@ -35,11 +35,13 @@ public class ResultListViewActivity extends AppCompatActivity {
 
 
     ListView listView;
-    PlaygroundList playgroundList = new PlaygroundList();
-    ArrayList<String> playgroundStringList;
-    Location currentloc;
     Button btnMapActivity;
-    int velikostVyberu;
+
+
+    PlaygroundList playgroundList = new PlaygroundList();    // třída pro List s playgroundClass
+    ArrayList<String> playgroundStringList;     // String ArrayList pro výpis do ListView
+    Location currentloc;    //proměnná pro udržení hodnot současné lokace -> pro výpočet vzdálenosti hřišť od pozice uživatele
+    int velikostVyberu;     //proměnná pro určení počtu vypsaných výsledků
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,55 +55,58 @@ public class ResultListViewActivity extends AppCompatActivity {
         // nastavení jména activity
         this.setTitle("Výpis hřišť do ListView ");
 
+        // načtení dat z předchozí activity
         Bundle extras = getIntent().getBundleExtra("bundle");
 
         velikostVyberu = extras.getInt("velVyber");
         currentloc = extras.getParcelable("location");
 
-
+        // nastavení vlastností pro listview
         listView = findViewById(R.id.list_view);
-
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                //String txt = ((TextView) view).getText().toString();
-                String txt = (String)parent.getItemAtPosition(position);
-                int pozice = (int)parent.getItemIdAtPosition(position);
-                String poziceString = Integer.toString(pozice);
-
-                /*
-                Toast.makeText(getApplicationContext(), txt + " \nID v listView: "
-                        + poziceString, Toast.LENGTH_SHORT).show();
-*/
+                int poziceVyberu = (int)parent.getItemIdAtPosition(position);
 
                 Intent intent = new Intent(ResultListViewActivity.this,
                         PlaygroundDetailActivity.class);
-                intent.putExtra("playground", playgroundList.getOnIndex(pozice));
+                
+                intent.putExtra("playground", playgroundList.getOnIndex(poziceVyberu));
                 startActivity(intent);
             }
         });
 
+        // nastavení vlastností pro button na přechod do zobrazení mapy (nová activity)
         btnMapActivity = findViewById(R.id.btn_PrejdiDoMapaActivity);
         btnMapActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // zobrazení chybové hlášky v případě, kdy se nepodařilo načíst žádná data o hřištích
+                if(playgroundList.size() < 1)
+                {
+                    Toast.makeText(ResultListViewActivity.this, "Nebyly načteny žádná data k hřištím", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // předání dat o hřištích
                 Intent intent = new Intent(ResultListViewActivity.this, ResultMapActivity.class);
 
-                intent.putExtra("bundle", extras);
+                intent.putExtra("playgroundList", playgroundList);
+                //intent.putExtra("bundle2", extras);
 
                 startActivity(intent);
             }
         });
     }
 
+    // asynchronní načtení dat o hřištích z databáze
     public class MyAsyncTasks extends AsyncTask<String, String, String> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            //zobraz progress dialog
+            //zobraz progress dialog při načítání
             progressDialog = new ProgressDialog(ResultListViewActivity.this);
             progressDialog.setMessage("Zpracovávám výsledky");
             progressDialog.setCancelable(false);
@@ -112,14 +117,15 @@ public class ResultListViewActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
+            // stopnutí zobrazení čekání běham načítání z DB
             progressDialog.dismiss();
 
             try
             {
+                // načtení data z JSON a převedení do custom tříd
                 JSONArray jsonArray = new JSONArray(s);
 
                 String results = "";
-
 
                 for(int i = 0; i < jsonArray.length(); i++)
                 {
@@ -134,25 +140,21 @@ public class ResultListViewActivity extends AppCompatActivity {
 
                     PlaygroundClass pg = new PlaygroundClass(id_pg, gps_lat, gps_long, name, type, pg_rank);
                     playgroundList.add(pg);
-
-                    //results += "ID: " + id_pg + "\n" + "Name: " + name +"\n\n";
                 }
 
 
-
-                //Toast.makeText(ResultListViewActivity.this, results, Toast.LENGTH_SHORT).show();
-
                 if(currentloc != null)
                 {
+                    // předání dat pro nastavení počtu zobrazených výsledků a výchozí lokace, ze které se provede výpočet vzdálenosti
                     playgroundList.setVelVyberu(velikostVyberu);
                     playgroundList.setCurrentLocation(currentloc);
                 }
                 else
                 {
-                    Toast.makeText(getApplicationContext(), "Souřadnice nenalezeny", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ResultListViewActivity.this, "Souřadnice nenalezeny", Toast.LENGTH_SHORT).show();
                 }
 
-
+                // iniciliazece String listu s výsledky pro vypsání do ListView v activitě
                 playgroundStringList = playgroundList.getStringArrayList();
 
                 ArrayAdapter<String> arrayAdapter = new ArrayAdapter(ResultListViewActivity.this,
@@ -169,6 +171,7 @@ public class ResultListViewActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
 
+            // připojení k DB
             String result = "";
             try
             {

@@ -11,7 +11,7 @@ import com.playgrounds01.myapp.R;
 public class PlaygroundDetailActivity extends AppCompatActivity {
 
     TextView textView_Souradnice, textViewPopis, textViewRank, textViewVzdalenost;
-    PlaygroundClass plDetail;
+    PlaygroundClass pgSelected;
 
 
     @Override
@@ -27,14 +27,14 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
         textViewRank = findViewById(R.id.textViewRank);
         textViewVzdalenost = findViewById(R.id.textViewVzdalenost);
 
-        plDetail = (PlaygroundClass) getIntent().getSerializableExtra("playground");
+        pgSelected = getIntent().getParcelableExtra("playground");
 
-        if(plDetail != null)
+        if(pgSelected != null)
         {
-            textView_Souradnice.setText("Souřadnice: " + plDetail.getGps_lat() + ", " + plDetail.getGps_long());
-            textViewPopis.setText("Popis: " + plDetail.getName());
-            textViewRank.setText("Rank: " + plDetail.getPg_rank());
-            textViewVzdalenost.setText("Vzdálenost: " + plDetail.getVzdalenost());
+            textView_Souradnice.setText("Souřadnice: " + pgSelected.getGps_lat() + ", " + pgSelected.getGps_long());
+            textViewPopis.setText("Popis: " + pgSelected.getName());
+            textViewRank.setText("Rank: " + pgSelected.getPg_rank());
+            textViewVzdalenost.setText("Vzdálenost: " + pgSelected.getVzdalenost());
         }
         else
         {

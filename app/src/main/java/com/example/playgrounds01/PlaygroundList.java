@@ -1,27 +1,54 @@
 package com.example.playgrounds01;
 
 import android.location.Location;
+import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class PlaygroundList extends ArrayList<Parcelable> {
+
+public class PlaygroundList implements Parcelable {
     private ArrayList<PlaygroundClass> playgrounds_list;
     private Location currentLocation;
     private int velVyberu;
 
     public PlaygroundList()
     {
-        playgrounds_list = new ArrayList<PlaygroundClass>();
+        playgrounds_list = new ArrayList<>();
         velVyberu = 0;
 
         //NacistTestovaciHriste();
     }
 
+    // metoda nutná pro Parcelable
+    protected PlaygroundList(Parcel in) {
+        playgrounds_list = in.createTypedArrayList(PlaygroundClass.CREATOR);
+        currentLocation = in.readParcelable(Location.class.getClassLoader());
+        velVyberu = in.readInt();
+    }
+
+    // metoda nutná pro Parcelable
+    public static final Creator<PlaygroundList> CREATOR = new Creator<PlaygroundList>() {
+        @Override
+        public PlaygroundList createFromParcel(Parcel in) {
+            return new PlaygroundList(in);
+        }
+
+        @Override
+        public PlaygroundList[] newArray(int size) {
+            return new PlaygroundList[size];
+        }
+    };
+
     public PlaygroundClass getOnIndex(int index)
     {
         return playgrounds_list.get(index);
+    }
+
+
+    public Location getCurrentLocation() {
+        return currentLocation;
     }
 
     public void setCurrentLocation(Location currentLocation) {
@@ -135,4 +162,17 @@ public class PlaygroundList extends ArrayList<Parcelable> {
                 "Pískoviště na Podlesí"));
     }
 
+    // metoda nutná pro Parcelable
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    // metoda nutná pro Parcelable
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeTypedList(playgrounds_list);
+        dest.writeParcelable(currentLocation, flags);
+        dest.writeInt(velVyberu);
+    }
 }
