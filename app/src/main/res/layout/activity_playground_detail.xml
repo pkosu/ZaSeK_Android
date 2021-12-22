@@ -6,8 +6,9 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:padding="16dp"
     tools:context="com.example.playgrounds01.PlaygroundDetailActivity">
+
+    <include layout="@layout/toolbar" />
 
     <TextView
         android:id="@+id/textView_Souradnice"

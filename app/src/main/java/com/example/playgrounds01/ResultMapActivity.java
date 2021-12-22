@@ -2,7 +2,11 @@ package com.example.playgrounds01;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.media.Image;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.playgrounds01.myapp.R;
@@ -23,13 +27,29 @@ public class ResultMapActivity extends AppCompatActivity {
 
     PlaygroundList playgroundList;
 
+
+    //toolbar komponenty
+    TextView textViewToolbarTitle;
+    ImageView btnBackToList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result_map);
 
         // nastavení jména activity
-        this.setTitle("Výpis hřišť do Mapy ");
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle.setText("Výpis hřišť do Mapy ");
+
+        btnBackToList = (ImageView) findViewById(R.id.toolbar_mapBtn);
+        btnBackToList.setImageResource(R.drawable.ic_baseline_list_24);
+        btnBackToList.setVisibility(View.VISIBLE);
+        btnBackToList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         // načtení playground listu z ResultListViewActivity
         playgroundList = getIntent().getParcelableExtra("playgroundList");

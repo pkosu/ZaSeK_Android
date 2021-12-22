@@ -10,8 +10,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.playgrounds01.myapp.R;
@@ -35,8 +36,9 @@ public class ResultListViewActivity extends AppCompatActivity {
 
 
     ListView listView;
-    Button btnMapActivity;
 
+    ImageView btnToolbarToMap;
+    TextView textViewToolbarTitle;
 
     PlaygroundList playgroundList = new PlaygroundList();    // třída pro List s playgroundClass
     ArrayList<String> playgroundStringList;     // String ArrayList pro výpis do ListView
@@ -53,7 +55,10 @@ public class ResultListViewActivity extends AppCompatActivity {
         myAsyncTasks.execute();
 
         // nastavení jména activity
-        this.setTitle("Výpis hřišť do ListView ");
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle.setText("Výpis hřišť do ListView");
+
+
 
         // načtení dat z předchozí activity
         Bundle extras = getIntent().getBundleExtra("bundle");
@@ -77,9 +82,11 @@ public class ResultListViewActivity extends AppCompatActivity {
             }
         });
 
-        // nastavení vlastností pro button na přechod do zobrazení mapy (nová activity)
-        btnMapActivity = findViewById(R.id.btn_PrejdiDoMapaActivity);
-        btnMapActivity.setOnClickListener(new View.OnClickListener() {
+
+        // nastavení vlastností pro button v toolbaru na přechod do zobrazení mapy (nová activity)
+        btnToolbarToMap = (ImageView) findViewById(R.id.toolbar_mapBtn);
+        btnToolbarToMap.setVisibility(View.VISIBLE);
+        btnToolbarToMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // zobrazení chybové hlášky v případě, kdy se nepodařilo načíst žádná data o hřištích

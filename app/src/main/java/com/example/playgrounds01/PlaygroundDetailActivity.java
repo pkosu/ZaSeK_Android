@@ -14,13 +14,19 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
     PlaygroundClass pgSelected;
 
 
+    //toolbar komponenty
+    TextView textViewToolbarTitle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playground_detail);
 
+
+
         // nastavení jména activity
-        this.setTitle("Výpis detail hřiště");
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle.setText("Výpis detail hřiště");
 
         textView_Souradnice = findViewById(R.id.textView_Souradnice);
         textViewPopis = findViewById(R.id.textViewPopis);

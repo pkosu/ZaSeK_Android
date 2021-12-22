@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,13 +46,17 @@ public class MainActivity extends AppCompatActivity {
     Location currentLoc;
     FusedLocationProviderClient fusedLocationProviderClient;
 
+    //toolbar komponenty
+    TextView textViewToolbarTitle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         // nastavení jména activity
-        this.setTitle("Hlavní stránka");
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle.setText("PlayGrounds01");
 
 
         // přiřazení proměnných
