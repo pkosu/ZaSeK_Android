@@ -3,6 +3,7 @@ package com.example.playgrounds01;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,11 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
         textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
         textViewToolbarTitle.setText("Výpis detail hřiště");
 
+        //nastavení viditelnosti ikonek toolbaru
+        findViewById(R.id.toolbar_mapBtn).setVisibility(View.GONE);
+        findViewById(R.id.toolbar_listBtn).setVisibility(View.GONE);
+        findViewById(R.id.toolbar_sortBtn).setVisibility(View.GONE);
+
         textView_Souradnice = findViewById(R.id.textView_Souradnice);
         textViewPopis = findViewById(R.id.textViewPopis);
         textViewRank = findViewById(R.id.textViewRank);
@@ -40,7 +46,7 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
             textView_Souradnice.setText("Souřadnice: " + pgSelected.getGps_lat() + ", " + pgSelected.getGps_long());
             textViewPopis.setText("Popis: " + pgSelected.getName());
             textViewRank.setText("Rank: " + pgSelected.getPg_rank());
-            textViewVzdalenost.setText("Vzdálenost: " + pgSelected.getVzdalenost());
+            textViewVzdalenost.setText("Vzdálenost: " + pgSelected.getVzdalenostKm() + "km");
         }
         else
         {

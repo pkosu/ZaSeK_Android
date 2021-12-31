@@ -37,7 +37,9 @@ public class ResultListViewActivity extends AppCompatActivity {
 
     ListView listView;
 
+    // toolbar proměnné
     ImageView btnToolbarToMap;
+    ImageView btnToolbarSort;
     TextView textViewToolbarTitle;
 
     PlaygroundList playgroundList = new PlaygroundList();    // třída pro List s playgroundClass
@@ -54,7 +56,7 @@ public class ResultListViewActivity extends AppCompatActivity {
         MyAsyncTasks myAsyncTasks = new MyAsyncTasks();
         myAsyncTasks.execute();
 
-        // nastavení jména activity
+        // nastavení jména activity v toolbaru
         textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
         textViewToolbarTitle.setText("Výpis hřišť do ListView");
 
@@ -103,6 +105,25 @@ public class ResultListViewActivity extends AppCompatActivity {
                 //intent.putExtra("bundle2", extras);
 
                 startActivity(intent);
+            }
+        });
+
+        // nastavení vlastností pro button v toolbaru na seřazení výsledků
+        btnToolbarSort = (ImageView) findViewById(R.id.toolbar_sortBtn);
+        btnToolbarSort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String odpoved = playgroundList.SeradAVypis();
+
+                // iniciliazece String listu s výsledky pro vypsání do ListView v activitě
+                playgroundStringList = playgroundList.getStringArrayList();
+
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter(ResultListViewActivity.this,
+                        android.R.layout.simple_list_item_1, playgroundStringList);
+
+                listView.setAdapter(arrayAdapter);
+
+                Toast.makeText(ResultListViewActivity.this, odpoved, Toast.LENGTH_SHORT).show();
             }
         });
     }

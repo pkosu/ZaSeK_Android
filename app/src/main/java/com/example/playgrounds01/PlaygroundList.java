@@ -13,6 +13,10 @@ public class PlaygroundList implements Parcelable {
     private Location currentLocation;
     private int velVyberu;
 
+    // pouze pomocná proměnná pro sortování-> po přidání filtrace výsledku podle dalších kritérií
+    // bude odebrána
+    private int lastSortOptions = 1;
+
     public PlaygroundList()
     {
         playgrounds_list = new ArrayList<>();
@@ -72,7 +76,7 @@ public class PlaygroundList implements Parcelable {
             pl.setVzdalenost(result[0]);
         }
 
-        SeradVyber();
+        SeradAVypis();
     }
 
     public void add(PlaygroundClass pg)
@@ -85,7 +89,32 @@ public class PlaygroundList implements Parcelable {
         return playgrounds_list.size();
     }
 
-    private void SeradVyber()
+    public String SeradAVypis(){
+        String ret = "";
+        if(lastSortOptions == 1){
+            SeradVyberPodleVzdalenosti();
+            lastSortOptions = 0;
+            ret = "Seřazeno podle vzdálenosti";
+        }
+        else{
+            SeradVyberPodleRanku();
+            lastSortOptions = 1;
+            ret = "Seřazeno podle hodnocení";
+        }
+
+        if(velVyberu > 0)
+        {
+            if(velVyberu > playgrounds_list.size())
+            {
+                velVyberu = playgrounds_list.size();
+            }
+            playgrounds_list.subList(velVyberu, playgrounds_list.size()).clear();
+        }
+
+        return ret;
+    }
+
+    private void SeradVyberPodleVzdalenosti()
     {
         playgrounds_list.sort(new Comparator<PlaygroundClass>() {
             @Override
@@ -103,18 +132,27 @@ public class PlaygroundList implements Parcelable {
                 return -1;
             }
         });
-
-        if(velVyberu > 0)
-        {
-            if(velVyberu > playgrounds_list.size())
-            {
-                velVyberu = playgrounds_list.size();
-            }
-            playgrounds_list.subList(velVyberu, playgrounds_list.size()).clear();
-        }
-
     }
 
+    private void SeradVyberPodleRanku()
+    {
+        playgrounds_list.sort(new Comparator<PlaygroundClass>() {
+            @Override
+            public int compare(PlaygroundClass o1, PlaygroundClass o2) {
+                if(o1.getPg_rank() == o2.getPg_rank())
+                {
+                    return 0;
+                }
+
+                if(o1.getPg_rank() > o2.getPg_rank())
+                {
+                    return 1;
+                }
+
+                return -1;
+            }
+        });
+    }
     public ArrayList<String> getStringArrayList()
     {
         ArrayList<String> retList = new ArrayList<>();
@@ -123,7 +161,7 @@ public class PlaygroundList implements Parcelable {
         {
             String txt = "Latitude: " + pg.getGps_lat() + " Longitude: " + pg.getGps_long() +
                     "\nPopis: " + pg.getName() + "\nRank: " + pg.getPg_rank() + "\nVzdálenost: " +
-                    pg.getVzdalenost() + "m";
+                    pg.getVzdalenostKm() + "km";
             retList.add(txt);
         }
 

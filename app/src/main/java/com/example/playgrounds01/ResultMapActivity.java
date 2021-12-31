@@ -42,7 +42,7 @@ public class ResultMapActivity extends AppCompatActivity {
         textViewToolbarTitle.setText("Výpis hřišť do Mapy ");
 
         btnBackToList = (ImageView) findViewById(R.id.toolbar_mapBtn);
-        btnBackToList.setImageResource(R.drawable.ic_baseline_list_24);
+        btnBackToList.setImageResource(R.drawable.ic_menu_list);
         btnBackToList.setVisibility(View.VISIBLE);
         btnBackToList.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -54,10 +54,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // nastavení jména activity
+        // nastavení Toolbaru jména activity
         textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
         textViewToolbarTitle.setText("PlayGrounds01");
 
+        //nastavení viditelnosti ikonek toolbaru
+        findViewById(R.id.toolbar_mapBtn).setVisibility(View.GONE);
+        findViewById(R.id.toolbar_listBtn).setVisibility(View.GONE);
+        findViewById(R.id.toolbar_sortBtn).setVisibility(View.GONE);
 
         // přiřazení proměnných
         editTextZadaniAdresy = findViewById(R.id.editText_zadaniAdresy);

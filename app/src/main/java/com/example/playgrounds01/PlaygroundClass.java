@@ -116,6 +116,12 @@ public class PlaygroundClass implements Parcelable {
         return vzdalenost;
     }
 
+    public float getVzdalenostKm() {
+        float km = (float) Math.round((vzdalenost / 1000) * 100 ) /100;
+
+        return km;
+    }
+
     public void setVzdalenost(float vzdalenost) {
         this.vzdalenost = vzdalenost;
     }
