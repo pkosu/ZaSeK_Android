@@ -47,10 +47,12 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
+    // string pro vypsání hledané hodnoty
+    String txtHledani = "Hledej do vzdálenosti: xxx km";
 
     // inicializace proměnných
     EditText editTextZadaniAdresy;
-    TextView textViewZobrazeniVyberuVelikosti;
+    TextView textViewZobrazeniVyberuVzdalenosti;
     SeekBar seekBarPojezdVyberuVelikosti;
     Button btnVyhledatPodleAdresy;
     LatLng latlng;
@@ -79,14 +81,34 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.toolbar_listBtn).setVisibility(View.GONE);
         findViewById(R.id.toolbar_sortBtn).setVisibility(View.GONE);
 
-        // přiřazení proměnných
-        textViewZobrazeniVyberuVelikosti = findViewById(R.id.textView_zobrazeniVyberuVelikost);
+        // nastavení seekbaru
         seekBarPojezdVyberuVelikosti = findViewById(R.id.seekBar_pojezdVyberuVelikosti);
+        seekBarPojezdVyberuVelikosti.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                textViewZobrazeniVyberuVzdalenosti.setText(txtHledani.replace("xxx", String.valueOf(progress)));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        // textView pro zobrazení zvolené vzdálenosti u hledání
+        textViewZobrazeniVyberuVzdalenosti = findViewById(R.id.textView_zobrazeniVyberuVelikost);
+        textViewZobrazeniVyberuVzdalenosti.setText(txtHledani.replace("xxx",
+                String.valueOf(seekBarPojezdVyberuVelikosti.getProgress())));
 
         // inicializace míst
         Places.initialize(getApplicationContext(), "AIzaSyCbYAY2jnLSwxM62aPS5U2L486PzkSyWzk");
 
-        // nastavení buttonu pro potvrzení heldání
+        // nastavení buttonu pro potvrzení hledání
         btnVyhledatPodleAdresy = findViewById(R.id.btn_vyhledat);
         btnVyhledatPodleAdresy.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,22 +136,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        seekBarPojezdVyberuVelikosti.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                textViewZobrazeniVyberuVelikosti.setText(String.valueOf(progress));
-            }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -221,8 +228,13 @@ public class MainActivity extends AppCompatActivity {
                     playgroundList.add(pg);
                 }
 
+                // Chybová hláška, pokud nebyly nalezeny žádné výsledky
+                if (playgroundList.size() < 1) {
+                    Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 // předání dat pro nastavení počtu zobrazených výsledků a výchozí lokace, ze které se provede výpočet vzdálenosti
-                playgroundList.setVelVyberu(seekBarPojezdVyberuVelikosti.getProgress());
                 if (latlng != null) {
                     Location selectLoc = new Location("Test");
                     selectLoc.setLatitude(latlng.latitude);
@@ -231,16 +243,19 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     playgroundList.setCurrentLocation(currentLoc);
                 }
+
+
+
+                playgroundList.setVelVyberuKm(seekBarPojezdVyberuVelikosti.getProgress());
                 // seřazení hřišť
-                playgroundList.SeradAVypis();
+                playgroundList.SeradAOmezPodleKm();
 
-                // kontrola počtu nalezených hřišť
-
+                // chybová hláška pokud v nastavené vzdálenosti nebyly nalezeny žádné výsledky
                 if (playgroundList.size() < 1) {
-                    Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "V zadané vzdálenosti nebyly nalezeny žádné výsledky",
+                            Toast.LENGTH_LONG).show();
                     return;
                 }
-
 
                 // předání výpisu do Activity ResultListViewActivity
                 Intent intent = new Intent(MainActivity.this, ResultListViewActivity.class);

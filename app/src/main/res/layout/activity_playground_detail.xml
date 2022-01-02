@@ -14,37 +14,36 @@
         android:id="@+id/textView_Souradnice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="monospace"
-        android:text="TextView1"
-        android:textSize="24sp"
+        android:layout_margin="10dp"
+        android:text="TextView1-Souradnice"
+        android:textSize="20sp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewPopis"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="monospace"
-        android:text="TextView2"
-        android:textSize="24sp"
+        android:layout_margin="10dp"
+        android:text="TextView2-Popis"
+        android:textSize="20sp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewRank"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="monospace"
-        android:text="TextView3"
-        android:textSize="24sp"
+        android:layout_margin="10dp"
+        android:text="TextView3-Rank"
+        android:textSize="20sp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/textViewVzdalenost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="monospace"
-        android:text="TextView4"
-        android:textSize="24sp"
+        android:layout_margin="10dp"
+        android:text="TextView4-Vzdalenost"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
 </LinearLayout>
