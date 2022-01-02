@@ -7,14 +7,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,10 +33,20 @@ import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
+
 
     // inicializace proměnných
     EditText editTextZadaniAdresy;
@@ -45,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
     LatLng latlng;
     Location currentLoc;
     FusedLocationProviderClient fusedLocationProviderClient;
+
+
+    final String playgourndsDbUrl = "https://api.naspisek.cz/api/playground/list";   // url databáze JSON
+    ProgressDialog progressDialog;  //progress bar pro zobrazení čekání při načítání
+    PlaygroundList playgroundList = new PlaygroundList();    // třída pro List s playgroundClass
 
     //toolbar komponenty
     TextView textViewToolbarTitle;
@@ -64,37 +80,25 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.toolbar_sortBtn).setVisibility(View.GONE);
 
         // přiřazení proměnných
-        editTextZadaniAdresy = findViewById(R.id.editText_zadaniAdresy);
         textViewZobrazeniVyberuVelikosti = findViewById(R.id.textView_zobrazeniVyberuVelikost);
         seekBarPojezdVyberuVelikosti = findViewById(R.id.seekBar_pojezdVyberuVelikosti);
-        btnVyhledatPodleAdresy = findViewById(R.id.btn_vyhledat);
 
         // inicializace míst
-        Places.initialize(getApplicationContext(),"AIzaSyCbYAY2jnLSwxM62aPS5U2L486PzkSyWzk");
+        Places.initialize(getApplicationContext(), "AIzaSyCbYAY2jnLSwxM62aPS5U2L486PzkSyWzk");
 
+        // nastavení buttonu pro potvrzení heldání
+        btnVyhledatPodleAdresy = findViewById(R.id.btn_vyhledat);
         btnVyhledatPodleAdresy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ResultListViewActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putInt("velVyber", seekBarPojezdVyberuVelikosti.getProgress());
-                if(latlng != null)
-                {
-                    Location selectLoc = new Location("Test");
-                    selectLoc.setLatitude(latlng.latitude);
-                    selectLoc.setLongitude(latlng.longitude);
-                    bundle.putParcelable("location", selectLoc);
-                }
-                else
-                {
-                    bundle.putParcelable("location", currentLoc);
-                }
-                intent.putExtra("bundle", bundle);
-                startActivity(intent);
+                //načtení data z databáze na internetu
+                MainActivity.MyAsyncTasks myAsyncTasks = new MainActivity.MyAsyncTasks();
+                myAsyncTasks.execute();
             }
         });
 
         // nastav EditText nonfocusable
+        editTextZadaniAdresy = findViewById(R.id.editText_zadaniAdresy);
         editTextZadaniAdresy.setFocusable(false);
         editTextZadaniAdresy.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,9 +131,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
@@ -140,13 +143,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
                 Location location = task.getResult();
-                if(location != null)
-                {
+                if (location != null) {
                     String souradnice = "Souřadnice: " + location.getLatitude() + ", " + location.getLongitude();
                     currentLoc = location;
-                }
-                else
-                {
+                } else {
                     Toast.makeText(getApplicationContext(), "nenalezeno", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -157,8 +157,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 100 && resultCode == RESULT_OK)
-        {
+        if (requestCode == 100 && resultCode == RESULT_OK) {
             // pokud se podaří
             // incializuj místo
             Place place = Autocomplete.getPlaceFromIntent(data);
@@ -168,9 +167,7 @@ public class MainActivity extends AppCompatActivity {
             latlng = place.getLatLng();
 
             btnVyhledatPodleAdresy.setVisibility(View.VISIBLE);
-        }
-        else if (resultCode == AutocompleteActivity.RESULT_ERROR)
-        {
+        } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
             // pokud bude chyba
             // incializuj status
             Status status = Autocomplete.getStatusFromIntent(data);
@@ -180,6 +177,124 @@ public class MainActivity extends AppCompatActivity {
             // zobraz Toast
             Toast.makeText(getApplicationContext(), status.getStatusMessage(),
                     Toast.LENGTH_LONG).show();
+        }
+    }
+
+
+    // asynchronní načtení dat o hřištích z databáze
+    public class MyAsyncTasks extends AsyncTask<String, String, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //zobraz progress dialog při načítání
+            progressDialog = new ProgressDialog(MainActivity.this);
+            progressDialog.setMessage("Zpracovávám výsledky");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            // stopnutí zobrazení čekání běham načítání z DB
+            progressDialog.dismiss();
+
+            try {
+                // načtení data z JSON a převedení do custom tříd
+                JSONArray jsonArray = new JSONArray(s);
+
+                String results = "";
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                    String id_pg = jsonObject.getString("id_pg");
+                    double gps_lat = jsonObject.getDouble("gps_lat");
+                    double gps_long = jsonObject.getDouble("gps_long");
+                    String name = jsonObject.getString("name");
+                    int type = jsonObject.getInt("type");
+                    int pg_rank = jsonObject.getInt("pg_rank");
+
+                    PlaygroundClass pg = new PlaygroundClass(id_pg, gps_lat, gps_long, name, type, pg_rank);
+                    playgroundList.add(pg);
+                }
+
+                // předání dat pro nastavení počtu zobrazených výsledků a výchozí lokace, ze které se provede výpočet vzdálenosti
+                playgroundList.setVelVyberu(seekBarPojezdVyberuVelikosti.getProgress());
+                if (latlng != null) {
+                    Location selectLoc = new Location("Test");
+                    selectLoc.setLatitude(latlng.latitude);
+                    selectLoc.setLongitude(latlng.longitude);
+                    playgroundList.setCurrentLocation(selectLoc);
+                } else {
+                    playgroundList.setCurrentLocation(currentLoc);
+                }
+                // seřazení hřišť
+                playgroundList.SeradAVypis();
+
+                // kontrola počtu nalezených hřišť
+
+                if (playgroundList.size() < 1) {
+                    Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+
+                // předání výpisu do Activity ResultListViewActivity
+                Intent intent = new Intent(MainActivity.this, ResultListViewActivity.class);
+
+                intent.putExtra("playgroundList", playgroundList);
+
+                startActivity(intent);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "Nepodařilo se načíst data..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
+
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            // připojení k DB
+            String result = "";
+            try {
+                URL url;
+                HttpsURLConnection urlConnection = null;
+                try {
+                    url = new URL(playgourndsDbUrl);
+
+                    urlConnection = (HttpsURLConnection) url.openConnection();
+
+                    InputStream in = urlConnection.getInputStream();
+
+                    InputStreamReader isw = new InputStreamReader(in);
+
+                    int data = isw.read();
+
+                    while (data != -1) {
+                        result += (char) data;
+                        data = isw.read();
+                    }
+
+                    return result;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (urlConnection != null) {
+                        urlConnection.disconnect();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "Nepodařilo se připojit k DB..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                return "Exception: " + e.getMessage();
+            }
+
+            return result;
         }
     }
 }

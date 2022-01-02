@@ -41,6 +41,8 @@ public class ResultMapActivity extends AppCompatActivity {
         textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
         textViewToolbarTitle.setText("Výpis hřišť do Mapy ");
 
+
+        // nastavení buttonu pro vrácení zpět na předchozí activitu -> ResultListViewActivity
         btnBackToList = (ImageView) findViewById(R.id.toolbar_mapBtn);
         btnBackToList.setImageResource(R.drawable.ic_menu_list);
         btnBackToList.setVisibility(View.VISIBLE);

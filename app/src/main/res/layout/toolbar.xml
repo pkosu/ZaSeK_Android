@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/purple_500">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <TextView
+            android:id="@+id/toolbat_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="Toolbar Title"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
+        <ImageView
+            android:id="@+id/toolbar_optionsBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_option"/>
+
+        <ImageView
+            android:id="@+id/toolbar_mapBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/toolbar_optionsBtn"
+            android:layout_marginRight="20dp"
+            android:src="@drawable/ic_menu_location"/>
+
+        <ImageView
+            android:id="@+id/toolbar_listBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/toolbar_optionsBtn"
+            android:layout_marginRight="20dp"
+            android:src="@drawable/ic_menu_list"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/toolbar_sortBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_toLeftOf="@id/toolbar_mapBtn"
+            android:src="@drawable/ic_menu_sort" />
+    </RelativeLayout>
+
+</RelativeLayout>
