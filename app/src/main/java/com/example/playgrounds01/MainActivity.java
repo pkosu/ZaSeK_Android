@@ -16,6 +16,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -40,15 +41,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
+
+    //proměnná pro lokální uložení hodnot z API DB
+    private static final String FILE_APIDB = "apiPG";
 
     // string pro vypsání hledané hodnoty
     String txtHledani = "Hledej do vzdálenosti: xxx km";
@@ -118,13 +128,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //kontrola připojení k internetu
-                if (!CheckInternetConnection()) {
-                    return;
+                if (CheckInternetConnection()) {
+                    //načtení data z databáze na internetu
+                    MainActivity.MyAsyncTasks myAsyncTasks = new MainActivity.MyAsyncTasks();
+                    myAsyncTasks.execute();
+                } else {
+                    if (loadInternalApiDb()) {
+                        // předání výpisu do Activity ResultListViewActivity
+                        Intent intent = new Intent(MainActivity.this, ResultListViewActivity.class);
+
+                        intent.putExtra("playgroundList", playgroundList);
+
+                        startActivity(intent);
+                        return;
+                    } else {
+                        Toast.makeText(MainActivity.this, "Nepodařilo se načíst lokální zálohu dat",
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
 
-                //načtení data z databáze na internetu
-                MainActivity.MyAsyncTasks myAsyncTasks = new MainActivity.MyAsyncTasks();
-                myAsyncTasks.execute();
             }
         });
 
@@ -178,10 +200,8 @@ public class MainActivity extends AppCompatActivity {
 
         boolean connected = networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected();
 
-        if (connected) {
-            Toast.makeText(getApplicationContext(), "JE připojeno", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(getApplicationContext(), "BEZ připojení -> zapněte data", Toast.LENGTH_SHORT).show();
+        if (!connected) {
+            Toast.makeText(getApplicationContext(), "Není připojení k internetu\nData budou načtena z lokální zálohy DB", Toast.LENGTH_SHORT).show();
         }
 
         return connected;
@@ -214,6 +234,124 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //lokální uložení Stringu s daty o DB načteného z API
+    private void saveInternalApiTxt(String txtApiPg) {
+        FileOutputStream fileOutputStream = null;
+
+        try {
+            fileOutputStream = openFileOutput(FILE_APIDB, MODE_PRIVATE);
+            fileOutputStream.write(txtApiPg.getBytes(StandardCharsets.UTF_8));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    //načtení lokálních dat -> pokud není připojení k internetu a data existují
+    private boolean loadInternalApiDb() {
+        FileInputStream fileInputStream = null;
+
+        try {
+            fileInputStream = openFileInput(FILE_APIDB);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuilder stringBuilder = new StringBuilder();
+            String txt;
+
+            while ((txt = bufferedReader.readLine()) != null) {
+                stringBuilder.append(txt);
+
+            }
+
+            boolean vysledek = rozdelDataApi(stringBuilder.toString());
+
+            return vysledek;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
+    //rozložení dat z API
+    private boolean rozdelDataApi(String s) {
+        try {
+            // vyčištění playgroundlist -> jinak vzniká opětovném načtení redundance
+            playgroundList = new PlaygroundList();
+
+            // načtení data z JSON a převedení do custom tříd
+            JSONArray jsonArray = new JSONArray(s);
+
+            String results = "";
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                String id_pg = jsonObject.getString("id_pg");
+                double gps_lat = jsonObject.getDouble("gps_lat");
+                double gps_long = jsonObject.getDouble("gps_long");
+                String name = jsonObject.getString("name");
+                int type = jsonObject.getInt("type");
+                int pg_rank = jsonObject.getInt("pg_rank");
+
+                PlaygroundClass pg = new PlaygroundClass(id_pg, gps_lat, gps_long, name, type, pg_rank);
+                playgroundList.add(pg);
+            }
+
+            // Chybová hláška, pokud nebyly nalezeny žádné výsledky
+            if (playgroundList.size() < 1) {
+                Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                return false;
+            }
+
+            // předání dat pro nastavení počtu zobrazených výsledků a výchozí lokace, ze které se provede výpočet vzdálenosti
+            if (latlng != null) {
+                Location selectLoc = new Location("Test");
+                selectLoc.setLatitude(latlng.latitude);
+                selectLoc.setLongitude(latlng.longitude);
+                playgroundList.setCurrentLocation(selectLoc);
+            } else {
+                playgroundList.setCurrentLocation(currentLoc);
+            }
+
+
+            playgroundList.setVelVyberuKm(seekBarPojezdVyberuVelikosti.getProgress());
+            // seřazení hřišť
+            playgroundList.SeradAOmezPodleKm();
+
+            // chybová hláška pokud v nastavené vzdálenosti nebyly nalezeny žádné výsledky
+            if (playgroundList.size() < 1) {
+                Toast.makeText(MainActivity.this, "V zadané vzdálenosti nebyly nalezeny žádné výsledky",
+                        Toast.LENGTH_LONG).show();
+                return false;
+            }
+
+            return true;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "Nepodařilo se načíst data..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
+        }
+    }
 
     // asynchronní načtení dat o hřištích z databáze
     public class MyAsyncTasks extends AsyncTask<String, String, String> {
@@ -232,68 +370,21 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
+            // lokální uložení načtených dat
+            saveInternalApiTxt(s);
+
             // stopnutí zobrazení čekání běham načítání z DB
             progressDialog.dismiss();
 
-            try {
-                // načtení data z JSON a převedení do custom tříd
-                JSONArray jsonArray = new JSONArray(s);
+            rozdelDataApi(s);
 
-                String results = "";
+            // předání výpisu do Activity ResultListViewActivity
+            Intent intent = new Intent(MainActivity.this, ResultListViewActivity.class);
 
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+            intent.putExtra("playgroundList", playgroundList);
 
-                    String id_pg = jsonObject.getString("id_pg");
-                    double gps_lat = jsonObject.getDouble("gps_lat");
-                    double gps_long = jsonObject.getDouble("gps_long");
-                    String name = jsonObject.getString("name");
-                    int type = jsonObject.getInt("type");
-                    int pg_rank = jsonObject.getInt("pg_rank");
+            startActivity(intent);
 
-                    PlaygroundClass pg = new PlaygroundClass(id_pg, gps_lat, gps_long, name, type, pg_rank);
-                    playgroundList.add(pg);
-                }
-
-                // Chybová hláška, pokud nebyly nalezeny žádné výsledky
-                if (playgroundList.size() < 1) {
-                    Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // předání dat pro nastavení počtu zobrazených výsledků a výchozí lokace, ze které se provede výpočet vzdálenosti
-                if (latlng != null) {
-                    Location selectLoc = new Location("Test");
-                    selectLoc.setLatitude(latlng.latitude);
-                    selectLoc.setLongitude(latlng.longitude);
-                    playgroundList.setCurrentLocation(selectLoc);
-                } else {
-                    playgroundList.setCurrentLocation(currentLoc);
-                }
-
-
-                playgroundList.setVelVyberuKm(seekBarPojezdVyberuVelikosti.getProgress());
-                // seřazení hřišť
-                playgroundList.SeradAOmezPodleKm();
-
-                // chybová hláška pokud v nastavené vzdálenosti nebyly nalezeny žádné výsledky
-                if (playgroundList.size() < 1) {
-                    Toast.makeText(MainActivity.this, "V zadané vzdálenosti nebyly nalezeny žádné výsledky",
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // předání výpisu do Activity ResultListViewActivity
-                Intent intent = new Intent(MainActivity.this, ResultListViewActivity.class);
-
-                intent.putExtra("playgroundList", playgroundList);
-
-                startActivity(intent);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Toast.makeText(MainActivity.this, "Nepodařilo se načíst data..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
         }
 
 
