@@ -8,9 +8,12 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -50,19 +53,20 @@ public class MainActivity extends AppCompatActivity {
     // string pro vypsání hledané hodnoty
     String txtHledani = "Hledej do vzdálenosti: xxx km";
 
-    // inicializace proměnných
+    // inicializace kompenent
     EditText editTextZadaniAdresy;
     TextView textViewZobrazeniVyberuVzdalenosti;
     SeekBar seekBarPojezdVyberuVelikosti;
     Button btnVyhledatPodleAdresy;
-    LatLng latlng;
-    Location currentLoc;
-    FusedLocationProviderClient fusedLocationProviderClient;
 
 
     final String playgourndsDbUrl = "https://api.naspisek.cz/api/playground/list";   // url databáze JSON
     ProgressDialog progressDialog;  //progress bar pro zobrazení čekání při načítání
     PlaygroundList playgroundList = new PlaygroundList();    // třída pro List s playgroundClass
+    // pomocné proměnné aktivity
+    LatLng latlng;
+    Location currentLoc;
+    FusedLocationProviderClient fusedLocationProviderClient;
 
     //toolbar komponenty
     TextView textViewToolbarTitle;
@@ -113,6 +117,11 @@ public class MainActivity extends AppCompatActivity {
         btnVyhledatPodleAdresy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //kontrola připojení k internetu
+                if (!CheckInternetConnection()) {
+                    return;
+                }
+
                 //načtení data z databáze na internetu
                 MainActivity.MyAsyncTasks myAsyncTasks = new MainActivity.MyAsyncTasks();
                 myAsyncTasks.execute();
@@ -137,9 +146,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
@@ -158,6 +167,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+    // kontrola konektivity internetu
+    private boolean CheckInternetConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        boolean connected = networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected();
+
+        if (connected) {
+            Toast.makeText(getApplicationContext(), "JE připojeno", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "BEZ připojení -> zapněte data", Toast.LENGTH_SHORT).show();
+        }
+
+        return connected;
 
     }
 
@@ -243,7 +270,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     playgroundList.setCurrentLocation(currentLoc);
                 }
-
 
 
                 playgroundList.setVelVyberuKm(seekBarPojezdVyberuVelikosti.getProgress());
