@@ -16,7 +16,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressDialog progressDialog;  //progress bar pro zobrazení čekání při načítání
     PlaygroundList playgroundList = new PlaygroundList();    // třída pro List s playgroundClass
     // pomocné proměnné aktivity
-    LatLng latlng;
+    LatLng latlngPlaces;
     Location currentLoc;
     FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -127,6 +126,12 @@ public class MainActivity extends AppCompatActivity {
         btnVyhledatPodleAdresy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //kontrola zda uživatel zadal místo nebo je načtena současná poloha z GPS
+                if(latlngPlaces == null &&  currentLoc == null){
+                    Toast.makeText(MainActivity.this, "Není načteno místo", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 //kontrola připojení k internetu
                 if (CheckInternetConnection()) {
                     //načtení data z databáze na internetu
@@ -167,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        // kontrola GPS povolení -> pokud není vyskočí Request
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -175,20 +180,27 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                Location location = task.getResult();
-                if (location != null) {
-                    String souradnice = "Souřadnice: " + location.getLatitude() + ", " + location.getLongitude();
-                    currentLoc = location;
-                } else {
-                    Toast.makeText(getApplicationContext(), "nenalezeno", Toast.LENGTH_SHORT).show();
+        // opětovná kontrola GPS povolení -> pokud by jí uživatel nepovolil, aby se nespouštělo vyhledávání současné polohy
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+                @Override
+                public void onComplete(@NonNull Task<Location> task) {
+                    Location location = task.getResult();
+                    if (location != null) {
+                        String souradnice = "Souřadnice: " + location.getLatitude() + ", " + location.getLongitude();
+                        currentLoc = location;
+                    } else {
+                        Toast.makeText(getApplicationContext(), "nenalezeno", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
+            });
+        }
+        else{
+            Toast.makeText(MainActivity.this, "Není aktivován GPS modul", Toast.LENGTH_LONG).show();
+        }
 
     }
 
@@ -218,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             // nastav adresu na EditText
             editTextZadaniAdresy.setText(place.getAddress());
 
-            latlng = place.getLatLng();
+            latlngPlaces = place.getLatLng();
 
             btnVyhledatPodleAdresy.setVisibility(View.VISIBLE);
         } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
@@ -226,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
             // incializuj status
             Status status = Autocomplete.getStatusFromIntent(data);
 
-            latlng = null;
+            latlngPlaces = null;
 
             // zobraz Toast
             Toast.makeText(getApplicationContext(), status.getStatusMessage(),
@@ -323,10 +335,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // předání dat pro nastavení počtu zobrazených výsledků a výchozí lokace, ze které se provede výpočet vzdálenosti
-            if (latlng != null) {
+            if (latlngPlaces != null) {
                 Location selectLoc = new Location("Test");
-                selectLoc.setLatitude(latlng.latitude);
-                selectLoc.setLongitude(latlng.longitude);
+                selectLoc.setLatitude(latlngPlaces.latitude);
+                selectLoc.setLongitude(latlngPlaces.longitude);
                 playgroundList.setCurrentLocation(selectLoc);
             } else {
                 playgroundList.setCurrentLocation(currentLoc);
