@@ -109,7 +109,7 @@ public class ResultListViewActivity extends AppCompatActivity {
 
                 listView.setAdapter(arrayAdapter);
 
-                Toast.makeText(ResultListViewActivity.this, odpoved, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ResultListViewActivity.this, odpoved, Toast.LENGTH_LONG).show();
             }
         });
 

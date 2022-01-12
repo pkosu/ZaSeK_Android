@@ -7,10 +7,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -62,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
     // string pro vypsání hledané hodnoty
     String txtHledani = "Hledej do vzdálenosti: xxx km";
 
+    // dialog pro zobrazování chybových zpráv
+    Dialog dialog;
+
     // inicializace kompenent
     EditText editTextZadaniAdresy;
     TextView textViewZobrazeniVyberuVzdalenosti;
@@ -88,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
         // nastavení Toolbaru jména activity
         textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
         textViewToolbarTitle.setText("PlayGrounds01");
+
+        // inicializace dialog
+        dialog = new Dialog(MainActivity.this);
 
         //nastavení viditelnosti ikonek toolbaru
         findViewById(R.id.toolbar_mapBtn).setVisibility(View.GONE);
@@ -127,8 +136,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //kontrola zda uživatel zadal místo nebo je načtena současná poloha z GPS
-                if(latlngPlaces == null &&  currentLoc == null){
-                    Toast.makeText(MainActivity.this, "Není načteno místo", Toast.LENGTH_SHORT).show();
+                if (latlngPlaces == null && currentLoc == null) {
+                    showDialog("Není zadána žádná adresa. \n" +
+                            "Nelze načíst aktuální GPS polohu.\n" +
+                            "Nemohu určit souřadnice a zobrazit výpis hřišť");
                     return;
                 }
 
@@ -147,8 +158,10 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent);
                         return;
                     } else {
-                        Toast.makeText(MainActivity.this, "Nepodařilo se načíst lokální zálohu dat",
-                                Toast.LENGTH_LONG).show();
+
+                        showDialog("Není připojení k internetu a nepodařilo se ani načíst lokální zálohu dat\n" +
+                                "Nemohu zobrazit výpis hřišť");
+                        //Toast.makeText(MainActivity.this, "Nepodařilo se načíst lokální zálohu dat", Toast.LENGTH_LONG).show();
                     }
                 }
 
@@ -193,12 +206,11 @@ public class MainActivity extends AppCompatActivity {
                         String souradnice = "Souřadnice: " + location.getLatitude() + ", " + location.getLongitude();
                         currentLoc = location;
                     } else {
-                        Toast.makeText(getApplicationContext(), "nenalezeno", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Nenalezeny aktuální souřadnice GPS", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
-        }
-        else{
+        } else {
             Toast.makeText(MainActivity.this, "Není aktivován GPS modul", Toast.LENGTH_LONG).show();
         }
 
@@ -213,13 +225,33 @@ public class MainActivity extends AppCompatActivity {
         boolean connected = networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected();
 
         if (!connected) {
-            Toast.makeText(getApplicationContext(), "Není připojení k internetu\nData budou načtena z lokální zálohy DB", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Není připojení k internetu\nData budou načtena z lokální zálohy DB", Toast.LENGTH_LONG).show();
         }
 
         return connected;
 
     }
 
+    // zobrazení dialogu -> chybové hlášky
+    private void showDialog(String txt) {
+        dialog.setContentView(R.layout.dialog_ok);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        TextView textViewDialog = dialog.findViewById(R.id.textView_dialog);
+        textViewDialog.setText(txt);
+
+        Button btnDialogOk = dialog.findViewById(R.id.btn_ok);
+        btnDialogOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+    // načítání adres -> autocomplete(api places)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -241,8 +273,8 @@ public class MainActivity extends AppCompatActivity {
             latlngPlaces = null;
 
             // zobraz Toast
-            Toast.makeText(getApplicationContext(), status.getStatusMessage(),
-                    Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), status.getStatusMessage(), Toast.LENGTH_LONG).show();
+            showDialog(status.getStatusMessage());
         }
     }
 
@@ -330,7 +362,8 @@ public class MainActivity extends AppCompatActivity {
 
             // Chybová hláška, pokud nebyly nalezeny žádné výsledky
             if (playgroundList.size() < 1) {
-                Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, "Nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                showDialog("Nebyly nalezeny žádné výsledky");
                 return false;
             }
 
@@ -351,8 +384,8 @@ public class MainActivity extends AppCompatActivity {
 
             // chybová hláška pokud v nastavené vzdálenosti nebyly nalezeny žádné výsledky
             if (playgroundList.size() < 1) {
-                Toast.makeText(MainActivity.this, "V zadané vzdálenosti nebyly nalezeny žádné výsledky",
-                        Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, "V zadané vzdálenosti nebyly nalezeny žádné výsledky", Toast.LENGTH_LONG).show();
+                showDialog("V zadané vzdálenosti nebyly nalezeny žádné výsledky");
                 return false;
             }
 
@@ -360,7 +393,8 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Toast.makeText(MainActivity.this, "Nepodařilo se načíst data..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainActivity.this, "Nepodařilo se načíst data..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+            showDialog("Nepodařilo se načíst data..\n" + e.getMessage());
             return false;
         }
     }
@@ -434,7 +468,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Toast.makeText(MainActivity.this, "Nepodařilo se připojit k DB..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(MainActivity.this, "Nepodařilo se připojit k DB..\n" + e.getMessage(), Toast.LENGTH_LONG).show();
+                showDialog("Nepodařilo se připojit k DB..\n" + e.getMessage());
                 return "Exception: " + e.getMessage();
             }
 

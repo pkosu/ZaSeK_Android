@@ -50,7 +50,7 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
         }
         else
         {
-            Toast.makeText(this, "Nenačten Detail", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nenačten Detail", Toast.LENGTH_LONG).show();
         }
 
 
