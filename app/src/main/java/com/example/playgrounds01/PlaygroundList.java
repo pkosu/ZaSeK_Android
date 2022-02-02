@@ -76,6 +76,12 @@ public class PlaygroundList implements Parcelable {
         SeradAVypis();
     }
 
+    public float calcLengh(double cur_lat, double cur_long, double plLoc_lat, double plLoc_long) {
+        float[] result = new float[1];
+        Location.distanceBetween(cur_lat, cur_long, plLoc_lat, plLoc_long, result);
+        return result[0];
+    }
+
     public void add(PlaygroundClass pg) {
         playgrounds_list.add(pg);
     }
