@@ -1,9 +1,8 @@
-package com.example.playgrounds01;
+package com.example.playgrounds01.Classes;
 
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Comparator;

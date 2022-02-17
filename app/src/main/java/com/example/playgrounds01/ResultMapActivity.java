@@ -2,13 +2,14 @@ package com.example.playgrounds01;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.playgrounds01.Classes.PlaygroundClass;
+import com.example.playgrounds01.Classes.PlaygroundList;
 import com.playgrounds01.myapp.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,11 +23,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class ResultMapActivity extends AppCompatActivity {
 
     GoogleMap mMap;
-
     Marker marker;
-
     PlaygroundList playgroundList;
-
 
     //toolbar komponenty
     TextView textViewToolbarTitle;
@@ -38,7 +36,7 @@ public class ResultMapActivity extends AppCompatActivity {
         setContentView(R.layout.activity_result_map);
 
         // nastavení jména activity
-        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbar_title);
         textViewToolbarTitle.setText("Výpis hřišť do Mapy ");
 
 

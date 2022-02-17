@@ -22,10 +22,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.playgrounds01.Classes.PlaygroundClass;
+import com.example.playgrounds01.Classes.PlaygroundList;
 import com.playgrounds01.myapp.R;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -83,8 +86,9 @@ public class MainActivity extends AppCompatActivity {
     Location currentLoc;
     FusedLocationProviderClient fusedLocationProviderClient;
 
-    //toolbar komponenty
+    //toolbar proměnné
     TextView textViewToolbarTitle;
+    ImageView btnToolbarToOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +96,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // nastavení Toolbaru jména activity
-        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbar_title);
         textViewToolbarTitle.setText("PlayGrounds01");
+
+        btnToolbarToOptions = (ImageView) findViewById(R.id.toolbar_optionsBtn);
+        btnToolbarToOptions.setVisibility(View.VISIBLE);
+        btnToolbarToOptions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // přesun do activity Login
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // inicializace dialog
         dialog = new Dialog(MainActivity.this);

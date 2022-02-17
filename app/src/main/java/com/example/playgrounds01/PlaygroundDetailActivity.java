@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.playgrounds01.Classes.PlaygroundClass;
 import com.playgrounds01.myapp.R;
 
 public class PlaygroundDetailActivity extends AppCompatActivity {
@@ -26,7 +27,7 @@ public class PlaygroundDetailActivity extends AppCompatActivity {
 
 
         // nastavení jména activity
-        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbar_title);
         textViewToolbarTitle.setText("Výpis detail hřiště");
 
         //nastavení viditelnosti ikonek toolbaru

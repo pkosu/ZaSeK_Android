@@ -2,12 +2,8 @@ package com.example.playgrounds01;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,18 +12,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.playgrounds01.Classes.PlaygroundList;
 import com.playgrounds01.myapp.R;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class ResultListViewActivity extends AppCompatActivity {
 
@@ -49,7 +37,7 @@ public class ResultListViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_result_list_view);
 
         // nastavení jména activity v toolbaru
-        textViewToolbarTitle = (TextView) findViewById(R.id.toolbat_title);
+        textViewToolbarTitle = (TextView) findViewById(R.id.toolbar_title);
         textViewToolbarTitle.setText("Výpis hřišť do ListView");
 
         // načtení předaného playground listu z MainActivity

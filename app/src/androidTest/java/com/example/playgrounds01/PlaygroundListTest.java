@@ -2,7 +2,7 @@ package com.example.playgrounds01;
 
 import static org.junit.Assert.*;
 
-import android.location.Location;
+import com.example.playgrounds01.Classes.PlaygroundList;
 
 import org.junit.Before;
 import org.junit.Test;
